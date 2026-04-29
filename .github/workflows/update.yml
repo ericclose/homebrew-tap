@@ -56,15 +56,9 @@ jobs:
             sed -i '' "s/sha256 arm: \".*\"/sha256 arm: \"$ARM_SHA\"/" Casks/mlx-whisper-app.rb
           fi
           
-          # Update Intel SHA (if exists in file)
+          # Update Intel SHA
           if [ -n "$INTEL_SHA" ]; then
-            if grep -q "intel:" Casks/mlx-whisper-app.rb; then
-              sed -i '' "s/intel: \".*\"/intel: \"$INTEL_SHA\"/" Casks/mlx-whisper-app.rb
-            else
-              # Insert intel line after arm line if not exists
-              sed -i '' "/sha256 arm:/a\\
-         intel: \"$INTEL_SHA\"" Casks/mlx-whisper-app.rb
-            fi
+            sed -i '' "s/intel: \".*\"/intel: \"$INTEL_SHA\"/" Casks/mlx-whisper-app.rb
           fi
 
       - name: Commit and push changes
