@@ -15,7 +15,14 @@ jobs:
       - name: Fetch latest release from target repo
         id: get_release
         run: |
-          RELEASE_JSON=$(curl -s https://api.github.com/repos/ericclose/MLXWhisperApp/releases/latest)
+          RELEASE_JSON=$(curl -s -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/ericclose/MLXWhisperApp/releases/latest)
+          
+          if ! echo "$RELEASE_JSON" | jq -e .tag_name > /dev/null; then
+            echo "Error: Could not fetch latest release. Response was:"
+            echo "$RELEASE_JSON"
+            exit 1
+          fi
+
           TAG_NAME=$(echo "$RELEASE_JSON" | jq -r .tag_name)
           VERSION=$(echo "$TAG_NAME" | sed 's/^v//')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
