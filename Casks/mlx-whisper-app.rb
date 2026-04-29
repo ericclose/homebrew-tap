@@ -18,8 +18,8 @@ cask "mlx-whisper-app" do
 
   zap trash: [
     "~/Library/Application Support/MLXWhisperApp",
-    "~/Library/Caches/com.ericclose.MLXWhisperApp",
-    "~/Library/Preferences/com.ericclose.MLXWhisperApp.plist",
-    "~/Library/Saved Application State/com.ericclose.MLXWhisperApp.savedState",
+    "~/Library/Caches/com.mlxwhisper.app",
+    "~/Library/Preferences/com.mlxwhisper.app.plist",
+    "~/Library/Saved Application State/com.mlxwhisper.app.savedState",
   ]
 end
