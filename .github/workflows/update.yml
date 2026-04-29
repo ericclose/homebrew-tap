@@ -1,0 +1,74 @@
+name: Update Cask
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Every day at midnight UTC
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-cask:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout tap
+        uses: actions/checkout@v4
+
+      - name: Fetch latest release from target repo
+        id: get_release
+        run: |
+          RELEASE_JSON=$(curl -s https://api.github.com/repos/ericclose/MLXWhisperApp/releases/latest)
+          TAG_NAME=$(echo "$RELEASE_JSON" | jq -r .tag_name)
+          VERSION=$(echo "$TAG_NAME" | sed 's/^v//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+          
+          # Get assets
+          ARM_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name | contains("arm64") and end_with(".dmg")) | .browser_download_url')
+          INTEL_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name | contains("x86_64") and end_with(".dmg")) | .browser_download_url')
+          
+          echo "arm_url=$ARM_URL" >> $GITHUB_OUTPUT
+          echo "intel_url=$INTEL_URL" >> $GITHUB_OUTPUT
+
+      - name: Update Cask file
+        run: |
+          VERSION="${{ steps.get_release.outputs.version }}"
+          ARM_URL="${{ steps.get_release.outputs.arm_url }}"
+          INTEL_URL="${{ steps.get_release.outputs.intel_url }}"
+          
+          # Download and calc SHA256 for ARM
+          if [ -n "$ARM_URL" ]; then
+            curl -L -o arm.dmg "$ARM_URL"
+            ARM_SHA=$(shasum -a 256 arm.dmg | awk '{print $1}')
+            echo "ARM_SHA: $ARM_SHA"
+          fi
+          
+          # Download and calc SHA256 for Intel
+          if [ -n "$INTEL_URL" ]; then
+            curl -L -o intel.dmg "$INTEL_URL"
+            INTEL_SHA=$(shasum -a 256 intel.dmg | awk '{print $1}')
+            echo "INTEL_SHA: $INTEL_SHA"
+          fi
+          
+          # Update version
+          sed -i '' "s/version \".*\"/version \"$VERSION\"/" Casks/mlx-whisper-app.rb
+          
+          # Update ARM SHA
+          if [ -n "$ARM_SHA" ]; then
+            sed -i '' "s/sha256 arm: \".*\"/sha256 arm: \"$ARM_SHA\"/" Casks/mlx-whisper-app.rb
+          fi
+          
+          # Update Intel SHA (if exists in file)
+          if [ -n "$INTEL_SHA" ]; then
+            if grep -q "intel:" Casks/mlx-whisper-app.rb; then
+              sed -i '' "s/intel: \".*\"/intel: \"$INTEL_SHA\"/" Casks/mlx-whisper-app.rb
+            else
+              # Insert intel line after arm line if not exists
+              sed -i '' "/sha256 arm:/a\\
+         intel: \"$INTEL_SHA\"" Casks/mlx-whisper-app.rb
+            fi
+          fi
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update mlx-whisper-app to ${{ steps.get_release.outputs.version }}"
+          file_pattern: 'Casks/mlx-whisper-app.rb'
