@@ -1,21 +1,19 @@
-# homebrew-tap
+# Homebrew Tap for MLXWhisperApp 🚀
 
-Personal Homebrew tap for MLXWhisperApp.
+This repository provides a Homebrew Cask for [MLXWhisperApp](https://github.com/ericclose/MLXWhisperApp), a high-performance local Whisper transcription app powered by Apple MLX.
 
-## Installation
+## 📦 Installation
 
-To add this tap to your Homebrew:
-
-```bash
-brew tap <your-github-username>/tap
-```
-
-Then install the app:
+You can install the app directly by running:
 
 ```bash
-brew install --cask mlx-whisper-app
+brew install --cask ericclose/tap/mlx-whisper-app
 ```
 
-## How it works
+## 🗑 Uninstallation
 
-This Cask uses the GitHub API to dynamically resolve the latest release download URL at install time. This ensures you always get the latest version without needing to manually update the formula.
+To remove the app and its associated data:
+
+```bash
+brew uninstall --cask mlx-whisper-app
+```
