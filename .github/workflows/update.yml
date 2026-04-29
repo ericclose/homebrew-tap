@@ -22,8 +22,8 @@ jobs:
           echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
           
           # Get assets
-          ARM_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name | contains("arm64") and end_with(".dmg")) | .browser_download_url')
-          INTEL_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name | contains("x86_64") and end_with(".dmg")) | .browser_download_url')
+          ARM_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name | contains("arm64") and endswith(".dmg")) | .browser_download_url')
+          INTEL_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name | contains("x86_64") and endswith(".dmg")) | .browser_download_url')
           
           echo "arm_url=$ARM_URL" >> $GITHUB_OUTPUT
           echo "intel_url=$INTEL_URL" >> $GITHUB_OUTPUT
